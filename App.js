@@ -1,20 +1,30 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import Main from "./src/components/Main";
+import { NativeRouter } from 'react-router-native';
+import { ApolloProvider } from '@apollo/client';
+import * as React from 'react'
+import createApolloClient from './src/utils/apolloClient';
+import AuthStorage from './src/utils/authStorage';
+import AuthStorageContext from './src/contexts/AuthStorageContext';
+import { authReducer } from "./src/contexts/AuthStorageContext";
+import {Host} from 'react-native-portalize';
 
-export default function App() {
+const authStorage = new AuthStorage();
+const apolloClient = createApolloClient(authStorage);
+
+const App = () => {
+  const [state, dispatch] = React.useReducer(authReducer, {auth: false});
+  const value = {authStorage, state, dispatch };
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <Host>
+    <NativeRouter>
+        <ApolloProvider client={apolloClient}>
+          <AuthStorageContext.Provider value= {value}>
+            < Main/>
+          </AuthStorageContext.Provider>
+        </ApolloProvider>
+    </NativeRouter>
+    </Host>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;
